@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -205,6 +205,48 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- [[ Swiss ISO Keyboard Layout Adaptations ]]
+-- Map ü to [ and ä to ] for easier access on Swiss keyboards
+-- where [ ] require AltGr combinations
+vim.keymap.set('n', 'ü', '[', { desc = 'Previous (Swiss layout)' })
+vim.keymap.set('n', 'ä', ']', { desc = 'Next (Swiss layout)' })
+vim.keymap.set('v', 'ü', '[', { desc = 'Previous (Swiss layout)' })
+vim.keymap.set('v', 'ä', ']', { desc = 'Next (Swiss layout)' })
+vim.keymap.set('o', 'ü', '[', { desc = 'Previous (Swiss layout)' })
+vim.keymap.set('o', 'ä', ']', { desc = 'Next (Swiss layout)' })
+
+-- Common bracket combinations
+vim.keymap.set('n', 'üü', '[[', { desc = 'Previous section' })
+vim.keymap.set('n', 'ää', ']]', { desc = 'Next section' })
+
+-- Diagnostic navigation with Swiss layout
+vim.keymap.set('n', 'üd', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
+vim.keymap.set('n', 'äd', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
+
+-- Easier command mode access (: is Shift+. on Swiss layout)
+vim.keymap.set('n', 'ö', ':', { desc = 'Command mode (Swiss layout)' })
+
+-- Easier line navigation
+vim.keymap.set('n', 'H', '^', { desc = 'Jump to first non-whitespace character' })
+vim.keymap.set('n', 'L', '$', { desc = 'Jump to end of line' })
+vim.keymap.set('v', 'H', '^', { desc = 'Jump to first non-whitespace character' })
+vim.keymap.set('v', 'L', '$', { desc = 'Jump to end of line' })
+
+-- [[ Terminal Management ]]
+-- Open terminal in different positions
+vim.keymap.set('n', '<leader>th', function()
+  vim.cmd('split')
+  vim.cmd('resize ' .. math.floor(vim.o.lines * 0.3))
+  vim.cmd('terminal')
+  vim.cmd('startinsert')
+end, { desc = '[T]erminal [H]orizontal split (30%)' })
+vim.keymap.set('n', '<leader>tv', '<cmd>vsplit | terminal<cr>i', { desc = '[T]erminal [V]ertical split' })
+vim.keymap.set('n', '<leader>tt', '<cmd>tabnew | terminal<cr>i', { desc = '[T]erminal new [T]ab' })
+vim.keymap.set('n', '<leader>tf', '<cmd>terminal<cr>i', { desc = '[T]erminal [F]ullscreen' })
+
+-- Easy escape from terminal mode
+vim.keymap.set('t', '<C-x>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -248,6 +290,96 @@ rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+
+  -- GitHub Copilot
+  {
+    'github/copilot.vim',
+    event = 'InsertEnter',
+  },
+
+  -- Better UI for command line, messages, and notifications
+  {
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+      'rcarriga/nvim-notify',
+    },
+    opts = {
+      cmdline = {
+        enabled = true,
+        view = 'cmdline_popup', -- Popup command line
+        opts = {}, -- Let it use default position (center)
+        format = {
+          cmdline = { icon = '>' },
+          search_down = { icon = '🔍⌄' },
+          search_up = { icon = '🔍⌃' },
+          filter = { icon = '$' },
+          lua = { icon = '☾' },
+          help = { icon = '?' },
+        },
+      },
+      views = {
+        cmdline_popup = {
+          position = {
+            row = '30%', -- Center vertically
+            col = '50%', -- Center horizontally
+          },
+          size = {
+            width = 60,
+            height = 'auto',
+          },
+          border = {
+            style = 'rounded',
+            padding = { 0, 1 },
+          },
+        },
+      },
+      messages = {
+        enabled = true,
+        view = 'notify', -- Use notify for messages
+        view_error = 'notify',
+        view_warn = 'notify',
+        view_history = 'messages',
+        view_search = 'virtualtext',
+      },
+      popupmenu = {
+        enabled = true,
+        backend = 'nui', -- Use nui for completion menu
+      },
+      notify = {
+        enabled = true,
+        view = 'notify',
+      },
+      lsp = {
+        override = {
+          ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
+          ['vim.lsp.util.stylize_markdown'] = true,
+          ['cmp.entry.get_documentation'] = true,
+        },
+        hover = {
+          enabled = true,
+          silent = false,
+        },
+        signature = {
+          enabled = true,
+          auto_open = {
+            enabled = true,
+            trigger = true,
+            luasnip = true,
+            throttle = 50,
+          },
+        },
+      },
+      presets = {
+        bottom_search = false, -- Use classic bottom search
+        command_palette = true, -- Position command palette in center
+        long_message_to_split = true, -- Long messages in split
+        inc_rename = false,
+        lsp_doc_border = true, -- Add border to LSP docs
+      },
+    },
+  },
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -347,6 +479,7 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>e', group = 'File [E]xplorer' },
       },
     },
   },
@@ -619,9 +752,9 @@ require('lazy').setup({
           --
           -- This may be unwanted, since they displace some of your code
           if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
-            map('<leader>th', function()
+            map('<leader>ti', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
-            end, '[T]oggle Inlay [H]ints')
+            end, '[T]oggle [I]nlay Hints')
           end
         end,
       })
@@ -643,16 +776,18 @@ require('lazy').setup({
         virtual_text = {
           source = 'if_many',
           spacing = 2,
+          severity = vim.diagnostic.severity.ERROR, -- Show all severities
           format = function(diagnostic)
             local diagnostic_message = {
-              [vim.diagnostic.severity.ERROR] = diagnostic.message,
-              [vim.diagnostic.severity.WARN] = diagnostic.message,
-              [vim.diagnostic.severity.INFO] = diagnostic.message,
-              [vim.diagnostic.severity.HINT] = diagnostic.message,
+              [vim.diagnostic.severity.ERROR] = '󰅚 ' .. diagnostic.message,
+              [vim.diagnostic.severity.WARN] = '󰀪 ' .. diagnostic.message,
+              [vim.diagnostic.severity.INFO] = '󰋽 ' .. diagnostic.message,
+              [vim.diagnostic.severity.HINT] = '󰌶 ' .. diagnostic.message,
             }
             return diagnostic_message[diagnostic.severity]
           end,
         },
+        update_in_insert = true, -- Show diagnostics while typing
       }
 
       -- LSP servers and clients are able to communicate to each other what features they support.
@@ -674,7 +809,27 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {
+          settings = {
+            ['rust-analyzer'] = {
+              check = {
+                command = 'check',
+              },
+              diagnostics = {
+                enable = true,
+                experimental = {
+                  enable = true,
+                },
+              },
+              cargo = {
+                allFeatures = true,
+              },
+              procMacro = {
+                enable = true,
+              },
+            },
+          },
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -716,6 +871,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'rustfmt', -- Used to format Rust code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -768,6 +924,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        rust = { 'rustfmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -881,25 +1038,161 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    'navarasu/onedark.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
+      require('onedark').setup {
+        style = 'deep'
       }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
-    end,
+      require('onedark').load()
+    end
   },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+
+  { -- File Explorer
+    'nvim-neo-tree/neo-tree.nvim',
+    version = '*',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+      'MunifTanjim/nui.nvim',
+    },
+    cmd = 'Neotree',
+    keys = {
+      { '<leader>E', '<cmd>Neotree toggle<cr>', desc = 'Toggle file [E]xplorer' },
+      { '<leader>e', '<cmd>Neotree focus<cr>', desc = '[E]xplorer Focus' },
+      { '<leader>g', '<cmd>Neotree git_status<cr>', desc = '[G]it status Explorer' },
+    },
+    opts = {
+      close_if_last_window = false, -- Don't auto-close Neo-tree to avoid weird window behavior
+      popup_border_style = 'rounded',
+      enable_git_status = true,
+      enable_diagnostics = true,
+      sort_case_insensitive = true, -- used when sorting files and directories in the tree
+      window = {
+        position = 'left',
+        -- width = 30, -- Fixed width to prevent Neo-tree from expanding
+      },
+      filesystem = {
+        window = {
+          mappings = {
+            ['\\'] = 'close_window',
+          },
+        },
+        filtered_items = {
+          visible = true, -- when true, they will just be displayed differently than normal items
+          hide_dotfiles = false,
+          hide_gitignored = false,
+          hide_hidden = true, -- only works on Windows for hidden files/directories
+          hide_by_name = {
+            --"node_modules"
+          },
+          hide_by_pattern = { -- uses glob style patterns
+            --"*.meta",
+            --"*/src/*/tsconfig.json",
+          },
+          always_show = { -- remains visible even if other settings would normally hide it
+            --".gitignored",
+          },
+          never_show = { -- remains hidden even if visible is toggled to true, this overrides always_show
+            --".DS_Store",
+            --"thumbs.db"
+          },
+          never_show_by_pattern = { -- uses glob style patterns
+            --".null-ls_*",
+          },
+        },
+        follow_current_file = {
+          enabled = true, -- This will find and focus the file in the active buffer every time
+          --               -- the current file is changed while the tree is open.
+          leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+        },
+        group_empty_dirs = false, -- when true, empty folders will be grouped together
+        hijack_netrw_behavior = 'open_default', -- netrw disabled, opening a directory opens neo-tree
+        -- in whatever position is specified in window.position
+        use_libuv_file_watcher = false, -- This will use the OS level file watchers to detect changes
+        -- instead of relying on nvim autocmd events.
+      },
+      buffers = {
+        follow_current_file = {
+          enabled = true, -- This will find and focus the file in the active buffer every time
+          --              -- the current file is changed while the tree is open.
+          leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+        },
+        group_empty_dirs = true, -- when true, empty folders will be grouped together
+        show_unloaded = true,
+      },
+      git_status = {
+        window = {
+          position = 'float',
+          mappings = {
+            ['gA'] = 'git_add_all',
+            ['ga'] = 'git_add_file',
+            ['gu'] = 'git_unstage_file',
+            ['gU'] = 'git_unstage_all',
+            ['gR'] = 'git_revert_file',
+            ['gc'] = 'git_commit',
+            ['gp'] = 'git_push',
+            ['gP'] = 'git_commit_and_push',
+          }
+        }
+      },
+      default_component_configs = {
+        container = {
+          enable_character_fade = true
+        },
+        indent = {
+          indent_size = 2,
+          padding = 1, -- extra padding on left hand side
+          -- indent guides
+          with_markers = true,
+          indent_marker = '│',
+          last_indent_marker = '└',
+          highlight = 'NeoTreeIndentMarker',
+          -- expander config, needed for nesting files
+          with_expanders = nil, -- if nil and file nesting is enabled, will enable expanders
+          expander_collapsed = '',
+          expander_expanded = '',
+          expander_highlight = 'NeoTreeExpander',
+        },
+        icon = {
+          folder_closed = '',
+          folder_open = '',
+          folder_empty = '󰜌',
+          -- The next two settings are only a fallback, if you use nvim-web-devicons and configure default icons there
+          -- then these will never be used.
+          default = '*',
+          highlight = 'NeoTreeFileIcon'
+        },
+        modified = {
+          symbol = '[+]',
+          highlight = 'NeoTreeModified',
+        },
+        name = {
+          trailing_slash = false,
+          use_git_status_colors = true,
+          highlight = 'NeoTreeFileName',
+        },
+        git_status = {
+          symbols = {
+            -- Change type
+            added     = '', -- or "✚", but this is redundant info if you use git_status_colors on the name
+            modified  = '', -- or "", but this is redundant info if you use git_status_colors on the name
+            deleted   = '✖',-- this can only be used in the git_status source
+            renamed   = '󰁕',-- this can only be used in the git_status source
+            -- Status type
+            untracked = '',
+            ignored   = '',
+            unstaged  = '󰄱',
+            staged    = '',
+            conflict  = '',
+          }
+        },
+      },
+    },
+  },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -938,13 +1231,14 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {

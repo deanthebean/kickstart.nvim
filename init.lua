@@ -104,6 +104,12 @@ vim.o.number = true
 --  Experiment for yourself to see if you like it!
 -- vim.o.relativenumber = true
 
+-- Set default tab and indent settings
+vim.o.tabstop = 2        -- Number of spaces tabs count for
+vim.o.shiftwidth = 2     -- Size of an indent
+vim.o.softtabstop = 2    -- Number of spaces tabs count for in insert mode
+vim.o.expandtab = true   -- Use spaces instead of tabs
+
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
 
@@ -289,7 +295,7 @@ rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+  -- 'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
 
   -- GitHub Copilot
   {
@@ -830,6 +836,28 @@ require('lazy').setup({
             },
           },
         },
+        jdtls = {
+          -- Java LSP configuration
+          settings = {
+            java = {
+              signatureHelp = { enabled = true },
+              contentProvider = { preferred = 'fernflower' },
+              completion = {
+                favoriteStaticMembers = {
+                  'org.junit.jupiter.api.Assertions.*',
+                  'org.junit.Assert.*',
+                  'org.mockito.Mockito.*',
+                },
+              },
+              sources = {
+                organizeImports = {
+                  starThreshold = 9999,
+                  staticStarThreshold = 9999,
+                },
+              },
+            },
+          },
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -872,6 +900,8 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
         'rustfmt', -- Used to format Rust code
+        'google-java-format', -- Used to format Java code
+        'checkstyle', -- Java linter
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -925,6 +955,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         rust = { 'rustfmt' },
+        java = { 'google-java-format' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -1073,7 +1104,7 @@ require('lazy').setup({
       sort_case_insensitive = true, -- used when sorting files and directories in the tree
       window = {
         position = 'left',
-        -- width = 30, -- Fixed width to prevent Neo-tree from expanding
+        width = 45, -- Fixed width to prevent Neo-tree from expanding
       },
       filesystem = {
         window = {
@@ -1238,7 +1269,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust', 'java' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {

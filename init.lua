@@ -303,6 +303,46 @@ require('lazy').setup({
     event = 'InsertEnter',
   },
 
+  -- GitHub Copilot Chat
+  {
+    'CopilotC-Nvim/CopilotChat.nvim',
+    dependencies = {
+      { 'github/copilot.vim' },
+      { 'nvim-lua/plenary.nvim', branch = 'master' },
+    },
+    build = "make tiktoken",
+    config = function()
+      local chat = require("CopilotChat")
+      chat.setup({
+        debug = false,
+        window = {
+          layout = 'vertical',
+          width = 0.3,
+        },
+      })
+      
+      -- Set the window to be fixed width after opening
+      vim.api.nvim_create_autocmd("BufWinEnter", {
+        pattern = "*",
+        callback = function()
+          if vim.bo.filetype == "copilot-chat" then
+            vim.wo.winfixwidth = true
+            vim.cmd('vertical resize 80')  -- Set fixed column width
+          end
+        end,
+      })
+    end,
+    keys = {
+      { '<leader>cc', '<cmd>CopilotChatToggle<cr>', desc = '[C]opilot [C]hat Toggle' },
+      { '<leader>ce', '<cmd>CopilotChatExplain<cr>', desc = '[C]opilot [E]xplain', mode = { 'n', 'v' } },
+      { '<leader>ct', '<cmd>CopilotChatTests<cr>', desc = '[C]opilot Generate [T]ests', mode = { 'n', 'v' } },
+      { '<leader>cf', '<cmd>CopilotChatFix<cr>', desc = '[C]opilot [F]ix', mode = { 'n', 'v' } },
+      { '<leader>co', '<cmd>CopilotChatOptimize<cr>', desc = '[C]opilot [O]ptimize', mode = { 'n', 'v' } },
+      { '<leader>cd', '<cmd>CopilotChatDocs<cr>', desc = '[C]opilot [D]ocs', mode = { 'n', 'v' } },
+      { '<leader>cq', '<cmd>CopilotChatReset<cr>', desc = '[C]opilot Reset (Clear [Q]uery)' },
+    },
+  },
+
   -- Better UI for command line, messages, and notifications
   {
     'folke/noice.nvim',
